@@ -341,3 +341,4 @@ _REG = {"RF": RF, "XGB": XGB, "SVM": SVM, "DT": DT, "MLC": MLC, "CNN": CNN,
 
 def build_model(key, K, seq_shape, params, log):
     return _REG[key](K, seq_shape, params, log)
+ 
