@@ -767,7 +767,7 @@ class Main(W.QMainWindow):
         t.setPalette(pal)
         l.addWidget(t)
         l.addStretch()
-        v = W.QLabel("Crop Map Generator v1.0")
+        v = W.QLabel("Crop Map Generator v3.0")
         v.setObjectName("footertxt")
         l.addWidget(v)
         return f
