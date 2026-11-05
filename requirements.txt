@@ -7,5 +7,5 @@ shapely
 matplotlib
 scikit-learn
 xgboost
-PyQt5
 torch
+PyQt5==5.15.9
