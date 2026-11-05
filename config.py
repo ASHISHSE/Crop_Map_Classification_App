@@ -13,5 +13,5 @@ TALUKA_NAME_FIELD   = "THENAME"      # e.g. "TAHSIL"
 DISTRICT_FALLBACK_EPSG = 32643  # UTM 43N
 TALUKA_FALLBACK_EPSG   = 4326
 
-# ---- Defaults shown in the GUI -----------------------------------------
+# ---- Defaults shown in the GUI ----------------------------------------
 OTHER_CLASS_NAME = "Other crop"
