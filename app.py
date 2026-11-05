@@ -1,11 +1,11 @@
 import streamlit as st
 import os
 import tempfile
+import zipfile
 import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 from matplotlib.colors import ListedColormap
-from matplotlib.patches import Patch
 import numpy as np
 import geopandas as gpd
 import pandas as pd
@@ -20,7 +20,6 @@ import config
 # --- Page Config ---
 st.set_page_config(page_title="Crop Map Generator", layout="wide", page_icon="🌾")
 
-# --- Custom CSS for aesthetics ---
 st.markdown("""
     <style>
     .main-header { font-size: 2.5rem; color: #1b5e20; font-weight: bold; margin-bottom: 0; }
@@ -33,19 +32,49 @@ st.markdown("""
 st.markdown('<p class="main-header">🌾 Crop Map Generator</p>', unsafe_allow_html=True)
 st.markdown('<p class="sub-header">Developed by ASHISH SELOKAR | Supervised & Unsupervised Classification</p>', unsafe_allow_html=True)
 
-# --- Caching ---
-@st.cache_resource
-def get_boundaries():
-    try:
-        return core.load_boundaries()
-    except Exception as e:
-        st.error(f"Error loading boundaries from `config.py`: {e}")
-        return None
+# --- Sidebar Controls ---
+with st.sidebar:
+    st.header("0. Upload Boundaries")
+    st.info("Upload a .zip file containing the District and Taluka shapefiles (.shp, .shx, .dbf, .prj).")
+    uploaded_bounds = st.file_uploader("Upload Boundary ZIP", type=["zip"])
+    
+    if uploaded_bounds:
+        # Extract zip to a temp folder
+        temp_dir = tempfile.mkdtemp()
+        with zipfile.ZipFile(uploaded_bounds, 'r') as z:
+            z.extractall(temp_dir)
+        
+        # Dynamically find the shapefiles in the extracted folder
+        shp_files = []
+        for root, dirs, files in os.walk(temp_dir):
+            for file in files:
+                if file.endswith('.shp'):
+                    shp_files.append(os.path.join(root, file))
+        
+        # Try to identify which is district and which is taluka
+        dist_shp = next((f for f in shp_files if "district" in f.lower()), None)
+        tal_shp = next((f for f in shp_files if "tahsil" in f.lower() or "taluka" in f.lower()), None)
+        
+        if not dist_shp or not tal_shp:
+            st.error("Could not find district or taluka shapefiles in the ZIP. Please check the filenames.")
+            st.stop()
+            
+        # Override config paths with the temporary extracted paths
+        config.DISTRICT_SHP = dist_shp
+        config.TALUKA_SHP = tal_shp
+        
+        # Load boundaries
+        try:
+            bounds = core.load_boundaries()
+            st.success("Boundaries loaded successfully!")
+        except Exception as e:
+            st.error(f"Error loading boundaries: {e}")
+            bounds = None
+    else:
+        bounds = None
 
-bounds = get_boundaries()
-
+# Only show the rest of the app if boundaries are loaded
 if bounds:
-    # --- Sidebar Controls ---
     with st.sidebar:
         st.header("1. Input Image(s)")
         uploaded_files = st.file_uploader("Upload FCC/NDVI stack", type=["tif", "tiff", "img"], accept_multiple_files=True)
