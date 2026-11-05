@@ -1,6 +1,4 @@
 libgl1
 libglib2.0-0
-libxext6
-libxrender1
-libsm6
 libgdal-dev
+gdal-bin
