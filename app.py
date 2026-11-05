@@ -2,6 +2,7 @@ import streamlit as st
 import os
 import tempfile
 import zipfile
+import requests  # Add this
 import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
@@ -11,15 +12,14 @@ import geopandas as gpd
 import pandas as pd
 import rasterio
 
-# Import your existing backend logic
 import core
 import models
 import unsup
 import config
 
-# --- Page Config ---
 st.set_page_config(page_title="Crop Map Generator", layout="wide", page_icon="🌾")
 
+# --- Header (same as before) ---
 st.markdown("""
     <style>
     .main-header { font-size: 2.5rem; color: #1b5e20; font-weight: bold; margin-bottom: 0; }
@@ -28,12 +28,58 @@ st.markdown("""
     .stButton>button:hover { background-color: #1b5e20; color: white; }
     </style>
 """, unsafe_allow_html=True)
-
 st.markdown('<p class="main-header">🌾 Crop Map Generator</p>', unsafe_allow_html=True)
 st.markdown('<p class="sub-header">Developed by ASHISH SELOKAR | Supervised & Unsupervised Classification</p>', unsafe_allow_html=True)
 
+# --- Function to download and extract boundaries ---
+@st.cache_resource(show_spinner="Downloading boundary shapefiles from GitHub...")
+def download_boundaries():
+    url = "https://github.com/ASHISHSE/Crop_Map_Classification_App/raw/main/Admin_boundary.zip"
+    temp_dir = tempfile.mkdtemp()
+    
+    try:
+        response = requests.get(url, stream=True)
+        response.raise_for_status()
+        
+        zip_path = os.path.join(temp_dir, "Admin_boundary.zip")
+        with open(zip_path, "wb") as f:
+            for chunk in response.iter_content(chunk_size=8192):
+                f.write(chunk)
+                
+        with zipfile.ZipFile(zip_path, 'r') as z:
+            z.extractall(temp_dir)
+            
+        # Find the .shp files
+        shp_files = []
+        for root, dirs, files in os.walk(temp_dir):
+            for file in files:
+                if file.endswith('.shp'):
+                    shp_files.append(os.path.join(root, file))
+                    
+        # Assign paths to config
+        dist_shp = next((f for f in shp_files if "district" in f.lower()), None)
+        tal_shp = next((f for f in shp_files if "tahsil" in f.lower() or "taluka" in f.lower()), None)
+        
+        if not dist_shp or not tal_shp:
+            raise ValueError(f"Could not identify district/taluka shapefiles. Found: {[os.path.basename(f) for f in shp_files]}")
+            
+        config.DISTRICT_SHP = dist_shp
+        config.TALUKA_SHP = tal_shp
+        
+        return core.load_boundaries()
+    except Exception as e:
+        st.error(f"Failed to download/load boundaries: {e}")
+        return None
+
+# Load boundaries
+bounds = download_boundaries()
+
 # --- Sidebar Controls ---
-with st.sidebar:
+if bounds:
+    with st.sidebar:
+        st.success("Boundaries loaded successfully!")
+        
+        # ... (Rest of your sidebar logic: inputs, methods, run button)
     st.header("0. Upload Boundaries")
     st.info("Upload a .zip file containing the District and Taluka shapefiles (.shp, .shx, .dbf, .prj).")
     uploaded_bounds = st.file_uploader("Upload Boundary ZIP", type=["zip"])
