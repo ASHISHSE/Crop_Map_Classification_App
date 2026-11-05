@@ -1,0 +1,11 @@
+numpy
+pandas
+openpyxl
+geopandas
+rasterio
+shapely
+matplotlib
+scikit-learn
+xgboost
+PyQt5
+torch
