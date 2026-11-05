@@ -6,7 +6,7 @@ import sys
 import traceback
 import numpy as np
 import matplotlib
-matplotlib.use("Qt5Agg")
+matplotlib.use("Agg")
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as Canvas, NavigationToolbar2QT as Toolbar
 from matplotlib.figure import Figure
 from matplotlib.colors import ListedColormap
