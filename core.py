@@ -526,3 +526,4 @@ def run_unsupervised(img, methods, params, out_dir, tag, log=_noop):
     xl = os.path.join(out_dir, f"{tag}_unsupervised.xlsx")
     xl = safe_write_excel_unsup(xl, results, params.get("extract_sig", True), log)
     return dict(results=results, excel=xl)
+ 
