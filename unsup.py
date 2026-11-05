@@ -188,3 +188,4 @@ def signatures(img, final, band_names, max_px=2_000_000, seed=42):
     order = sorted(df["Class"].unique(), key=lambda s: int(s.split()[1]))
     return {"Mean": g.mean().loc[order], "Std Dev": g.std().fillna(0).loc[order],
             "Min": g.min().loc[order], "Max": g.max().loc[order], "n_used": len(rows)}
+ 
