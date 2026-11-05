@@ -1,3 +1,4 @@
+streamlit>=1.30.0
 numpy
 pandas
 openpyxl
@@ -8,4 +9,3 @@ matplotlib
 scikit-learn
 xgboost
 torch
-PyQt5==5.15.9
